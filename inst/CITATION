@@ -1,0 +1,9 @@
+citEntry(entry="TechReport",
+	author="Yingying Wei, Patrick Hennessey, Daria Gaykalova, Joseph A. Califano and Michael F.Ochs",
+	title="Cancer Outlier Gene Profile Sets Elucidate Pathways in Head and Neck Squamous Cell Carcinoma.",
+	institution="Johns Hopkins University, Department of Biostatistics",
+  	year="2011",
+	type="Technical report",
+	textVersion=paste("Cancer Outlier Gene Profile Sets Elucidate Pathways in Head and Neck Squamous Cell Carcinoma.", "Wei, Y., Hennessey, P., Gaykalova, D., Califano, J.A., Ochs, M.F.", "2011, Technical Report,
+	Johns Hopkins University, Department of Biostatistics")
+)

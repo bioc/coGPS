@@ -1,0 +1,8 @@
+importFrom(graphics, abline, axis, layout, mtext, par, plot, rect,
+          segments, text)
+importFrom(grDevices, gray)
+export(PCOPA,
+       PatientSpecificGeneList,
+       PlotTopPCOPA,
+	plotCOPA,
+	permCOPA)

@@ -1,0 +1,15 @@
+Package: coGPS
+Type: Package
+Title: cancer outlier Gene Profile Sets
+Version: 0.99.0
+Date: 2011-10-20
+Author: Yingying Wei, Michael Ochs
+Maintainer: Yingying Wei <ywei@jhsph.edu>
+Description: Gene Set Enrichment Analysis of P-value based statistics for outlier gene detection in dataset merged from multiple studies
+Depends: R (>= 2.13.0)
+Suggests: limma
+Imports: graphics, grDevices
+License: GPL-2
+LazyLoad: yes
+biocViews: Microarray, Bioinformatics, DifferentialExpression
+Packaged: 2012-03-08 01:25:16 UTC; ywei

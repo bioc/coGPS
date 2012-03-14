@@ -1,0 +1,330 @@
+%\VignetteIndexEntry{coGPS}
+%\VignetteDepends{limma}
+%\VignetteKeyword{Outlier gene detection}
+%\VignetteKeyword{Gene Set Enrichment Analysis}
+%\VignetteKeyword{Patient Specific Outlier Gene list}
+\documentclass[a4paper]{article}
+\title{coGPS:Cancer Outlier Gene Profile Sets}
+\author{ Yingying Wei, Michael Ochs}
+\begin{document}
+\maketitle
+
+\section{Introduction}
+Generation of high-throughput genomic data has become routine
+in modern biology.   While the focus remains in many cases on the 
+identification of molecular species, such as mRNA transcripts, that
+differ between two conditions, the data is often of great interest
+for elucidating differences in pathway activity. Standard
+algorithms, such as {\em limma \/} \cite{limmaref}and {\em SAM \/}
+\cite{rsam}, are widely used for identifying transcripts (hereon 
+referred to genes) that differ
+statistically between two groups.  
+Later, as multiple datasets became available on the same biological
+process, people began to combine information from
+multiple studies to improve the power of statistical analysis in
+each study \cite{rConlon}, \cite{reb1}, \cite{reb10},
+\cite{rmannova}, and \cite{rXDE}.
+
+\parskip=\baselineskip
+\noindent It is often the case in cancer studies that the identification of
+important genes by these approaches fails.  The realization that genes 
+are often disregulated in only a subset of tumors led to the development
+of Cancer Outlier Profile Analysis ({\em COPA\/}) \cite{mg06}.
+Outlier genes are defined to be ones that are over-
+or under- expressed in a subset of tumor samples compared to normal
+samples. The difference between {\em outlier differential expressed
+gene\/} and normal differential expressed gene is that {\em outlier
+gene\/} may have the same level of expression in majority of tumor
+samples as that of normals. A
+few statistics for finding {\em outlier genes\/} have been
+proposed \cite{mg06}, \cite{rtib}, and \cite{rwu}. 
+
+\noindent  The data can also be used to elucidate pathway activity 
+through gene set analysis, also termed gene set enrichment analysis.
+In this case the statistic is used to rank all genes, and the relative 
+rank of genes within a pathway is used, typically in a Wilcoxon Rank 
+Sum Test, to determine if the genes associated with a pathway
+are distributed non-randomly.  The issue for cancer studies is the
+fact that pathways are often disregulated due to changes in 
+different genes in different samples, making the outlier statistic 
+of great use for ranking genes for gene set analysis.  This is the 
+focus of the work here. 
+
+\noindent In addition, we now have several types of high-throughput
+data available in a single study, which provides significantly more
+information if it can be integrated. Therefore, we 
+are interested in capturing those genes that
+are over-expressed, hypo-methylated and copy number amplified in a
+subset of data. The subset of samples that are over-expressed for a
+gene may not be the same as the subset of samples that are
+hypo-methylated for that gene. We call this type of outlier pattern
+{\em uniform outlier \/}. On the other hand, we may be interested in
+genes that are over-expressed in a subset of samples but behave the
+same as normals in methylation and CNV data. We call  this type of
+outlier pattern {\em subtype outlier \/}. 
+Here we follow and generalize Ghosh's approach
+\cite{rGosh} of defining a statistic for outlier measure based on
+the p-value of tumor samples compared to the empirical distribution
+of gene expression for controls.
+
+\section{Method}
+\subsection{Empirical p-values for tumors}
+\noindent We assume that we have totally $D$ studies. For study $d$,
+we have $N_{d0}$ control samples and $N_{d1}$ tumor samples. The
+gene expression data are stored in a matrix, with each row
+representing a single gene and each column representing one sample.
+Therefore, the expression value for gene $g$ is denoted as
+$[X_{g,1,1},\cdots,X_{g,1,N_{10}},X_{g,1,N_{10}+1},\cdots,X_{g,1,N_{10}+N_{11}},\cdots,X_{g,D,N_{D0}+N_{D1}}]$
+And the total expression matrix is $G$ by
+$(N_{10}+N_{11}+\cdots+N_{D0}+N_{D1})$
+
+The idea is that we compare each observation in our tumor samples to the
+empirical distribution of expression values of the same gene for
+normal samples in the same study. Now for gene $g$ in study $d$, for
+each expression in tumor samples we calculate the up-tail empirical
+p-value as
+
+\begin{equation}
+\hat{p}_{g,d,l}=\frac{1}{N_{d0}}\sum_{i=1}^{N_{d0}}I(X_{g,d,N_{d0}+l}\leq
+X_{g,d,i})
+\end{equation}
+
+\noindent The corresponding lower-tail empirical p-value is
+calculated as
+
+\begin{equation}
+\hat{p}_{g,d,l}=\frac{1}{N_{d0}}\sum_{i=1}^{N_{d0}}I(X_{g,d,N_{d0}+l}\geq
+X_{g,d,i})
+\end{equation}
+
+\noindent Therefore, in either case we come up with
+$G*(N_{11}+\cdots+N_{D1})$ matrix.
+
+\subsection{Uniform Outlier}
+\noindent Now for each gene, we conduct a Bonferroni correction.
+Setting the significance level to be $\alpha$, we turn the
+$\hat{p}_{g,d,l}$ to be a binary matrix $\hat{m}_{g,d,l}$:
+
+\begin{equation}
+\hat{m}_{g,d,l}=I(\hat{p}_{g,d,l} \leq
+\frac{\alpha}{N_{11}+\cdots+N_{D1}})
+\end{equation}
+
+\noindent Finally, we sum over $\hat{m}_{g,d,l}$ for each gene and
+obtain the summarized statistic $S_g$, which measures the number of
+outlier samples for gene $g$ across all studies. The idea is that we
+treat tumor samples from all studies equally. If there are
+consistent number of outlier samples for a given gene across all the
+studies, this gene would be identified as an outlier gene.
+
+\subsection{Subtype Outlier}
+\noindent Now for each gene within each study, we conduct a
+Bonferroni correction. Setting the significance level to be
+$\alpha$, we turn the $\hat{p}_{g,d,l}$ to be a binary matrix
+$\hat{m}_{g,d,l}$
+
+\begin{equation}
+\hat{m}_{g,d,l}=I(\hat{p}_{g,d,l}\leq \frac{\alpha}{N_{d1}})
+\end{equation}
+
+\noindent Next, we sum over $\hat{m}_{g,d,l}$ for each gene within
+each study and obtain the summarized statistics $s_{g,d}$, which
+measures the number of outlier samples for gene $g$ in study $d$.
+Finally, we set $S_g=max(s_{g,d},d=1,\cdots,D)$ By taking the
+maximum number of outlier sample numbers among the studies, we are
+able to capture genes that are over-expressed in a proportion of
+tumor samples in one study but behave exactly as normals in all the
+rest of studies.
+
+\section{Data preparation}
+In order to work with {\em coGPS\/}, we need to prepare the apporpriate data input format. The first argument \texttt{exprslist} is a list storing expression data and the corresponding class label of samples. As an example, here we have expression data, methylation data and copy number data for 25 normal people and 44 patients.
+<<loading>>=
+library(coGPS)
+data(Exon_exprs_matched)
+data(Methy_exprs_matched)
+data(CNV_exprs_matched)
+data(Exon_classlab_matched)
+data(Methy_classlab_matched)
+data(CNV_classlab_matched)
+head(Exon_exprs_matched[,1:5])
+head(Methy_exprs_matched[,1:5])
+head(CNV_exprs_matched[,1:5])
+@
+
+Each element of \texttt{exprslist} is a list with the first element being \texttt{exprs} and the second element being \texttt{classlab}. Each row of \texttt{exprs} represents one gene and each column represents one sample. \texttt{exprs} should have both row names showing gene names and column names showing sample names.\texttt{classlab} is a zero-one vector indicating the status of samples. 
+We use 0 for the baseline group, usually the normal group, and 1 for the comparison group, usually the tumor group.
+
+<<transforming>>=
+#exprslist[[i]]$exprs should be in matrix format
+Exon_exprs<-as.matrix(Exon_exprs_matched)
+Methy_exprs<-as.matrix(Methy_exprs_matched)
+CNV_exprs<-as.matrix(CNV_exprs_matched)
+
+#exprslist[[i]]$classlab should be in vector format
+Exon_classlab<-unlist(Exon_classlab_matched)
+Methy_classlab<-unlist(Methy_classlab_matched)
+CNV_classlab<-unlist(CNV_classlab_matched)
+
+#make an exprslist consisting 3 studies
+trylist<-list()
+trylist[[1]]<-list(exprs=Exon_exprs,classlab=Exon_classlab)
+trylist[[2]]<-list(exprs=Methy_exprs,classlab=Methy_classlab)
+trylist[[3]]<-list(exprs=CNV_exprs,classlab=CNV_classlab)
+@
+
+\section{Analysis}
+Once we have specified the input data \texttt{exprslist}, we can apply {\em PCOPA \/} to obtain the desired statistics. 
+Here suppose we are interested to find outlier genes that tend to have either over-expression, or hypo-methylated, or amplified copy number outlier samples. Therefore we set \texttt{side} to be \texttt{c("down","up","down")} and \texttt{type} to be \texttt{"subtype"}.
+
+<<subtypeanalysis>>=
+a7<-PCOPA(trylist,0.05,side=c("up","down","up"),type="subtype")
+@
+
+If we are interested to find outlier genes that tend to have over-expression, hypo-methylated and amplified copy number outlier samples. Therefore we set \texttt{type} to be \texttt{"uniform"}.
+<<uniformanalysis>>=
+a8<-PCOPA(trylist,0.05,side=c("up","down","up"),type="uniform")
+@
+After calculating the statistics, we can use {\em PlotTopPCOPA \/} to view the expression patterns of top ranked genes. For study {\em i\/}, {\em PlotTopPCOPA \/} first sorts the expression value \texttt{exprslist[[i]]\$exprs[j,]} among the baseline samples(e.g. normal ones) and comparison group (e.g. tumor ones)seperately for selected gene {\em j\/}, and then plot the sorted expression values. 
+The first argument \texttt{exprslist} should be the same one as for {\em PCOPA \/}; the second argument \texttt{PCOPAresult} should be an output of PCOPA; the third argument \texttt{topcut} determines how far we would go down the top ranked list; and the last argument \texttt{typelist} is a vector specifying the titles for each graph corresponds to a specific study.
+
+<<plotPCOPA>>=
+PlotTopPCOPA(trylist,a8,topcut=1,typelist=c("Exon","Methy","CNV"))
+@
+
+\begin{center}
+<<fig=TRUE,echo=FALSE>>=
+PlotTopPCOPA(trylist,a8,topcut=1,typelist=c("Exon","Methy","CNV"))
+@
+\end{center}
+
+We can run permutations to obtain the p-value for PCOPA statistics.
+<<permutation>>=
+perma7<-permCOPA(trylist,0.05,side=c("up","down","up"),type="subtype",perms=2)
+@
+
+For gene specific permutation pvalue:
+<<pvaluecal1>>=
+pvaluea7<-sapply(1:length(a7),function(i) 
+	length(which(perma7[i,]>a7[i]))/ncol(perma7))
+@
+
+For pvalue calculation using all genes' permutation COPA values:
+<<pvaluecal2>>=
+dista7<-as.vector(perma7)
+pvaluea7<-sapply(1:length(a7),function(i) 
+	length(which(dista7>a7[i]))/length(dista7))
+@
+
+\section{Downstream analysis}
+Now we can apply gene set enrichment analysis to the obtained PCOPA statistics.
+
+<<GSA>>=
+library(limma)
+data(human_c1)
+genename<-rownames(Exon_exprs)
+test_set1_a7<-rep(1,length(Hs.gmtl.c1))
+for(i in 1:length(Hs.gmtl.c1))
+{
+	set<-Hs.gmtl.c1[[i]]
+ 	matched<-match(genename,set)
+	index<-is.na(matched)==FALSE
+	if(sum(as.numeric(index))>0)
+	{
+		test_set1_a7[i]<-wilcoxGST(index,a7)
+	}
+	else
+	{
+		test_set1_a7[i]<-NA
+	}
+}
+@
+
+\section{Patient specific outlier gene list}
+In clinical settings, people are extremely interested in finding the outlier gene list for each specific patient. Here our package provides such a solution. Usually we focus on only those top ranked outlier genes over all samples. In other words, we want each of the gene on our patient specific outlier gene list to be among the top {\em PCOPA \/} scored outlier genes in all samples. We allow the user to set the number of top genes. In practice, the user may pick up a specific number which she or he thinks reasonable. Or the user may first run a permutation test to get the null distribution of {\em PCOPA \/} scores and use p-values after bonferroni correction or q-values derived from the p-values to select all significant genes. Caution should be paid to the order of samples in the generation of patient specific outlier gene list. Suppose one only wants to have the {\em PCOPA \/} scores and the down stream analysis of {\em GSE \/}, no matching of samples in different data types are required. But if one wants to generate patient specific outlier gene list, one has to put all the samples in each data type in the same order. In other words, \texttt{exprslist[[i]]\$exprs[,j]} should correspond to the sample {\em j\/} in each data type {\em i\/}.
+
+<<PatientSpecific>>=
+IndividualList7<-PatientSpecificGeneList(trylist,0.05,side=c("down","up","down"),
+type="subtype",TopGeneNum=100)
+@
+The individual outlier gene list for patient 1 in exon data, methylation data and CNV data are:
+<<Patient1>>=
+IndividualList7[[1]]
+@
+The corresponding ones for patient 33 are:
+<<patient7>>=
+IndividualList7[[33]]
+@
+
+\begin{thebibliography}{99}
+
+{\addtolength{\itemsep}{-1.1pt}
+\bibitem[http://www.ncbi.nlm.nih.gov/geo/]{GEOweb}
+
+
+\bibitem[Conlon{,} Song and Liu 2006]{rConlon}
+        {\sc Conlon, E. M., Song, J. J., Liu, J.S.} (2006),
+         {}Bayesian models for pooling
+Microarray studies with multiple sources of replications. {\it BMC
+Bioinformatics}{} \textbf{7}, 247
+
+\bibitem[Cui {\it et al.} 2005]{rmannova}
+        {\sc Cui, X., Hwang, J.T.G.,Qiu, J., Blades, N.J., Churchill, G.A.} (2005),
+         {}Improved statistical tests for
+differential gene expression by shrinking variance components
+estimates.. {\it Biostatistics}{} \textbf{6},1, 59{--}75
+
+
+\bibitem[Kendziorski {\it et al.} 2003]{reb1}
+        {\sc Kendziorski, C.{ }M.{},Newton, M. A., Lan, H.,Gould, M. N.  } (2003),
+         {}On parametric empirical Bayes methods for
+        comparing multiple groups using replicated gene expression profiles. {\it
+Statistics in Medicine}{} \textbf{22}, 3899{--}3914
+
+\bibitem[Scharpf {\it et al}. 2009]{rXDE}
+{\sc Scharpf, R.{ }B.{},Tjelmeland, H., Parmigiani, G.,Nobel, A. B.
+} (2009),
+         {}A {B}ayesian model for cross-study differential gene expression. {\it
+Journal of the American Statistical Association}{}
+\textbf{104(488)}, 1295{--}1310
+
+\bibitem[Smyth 2004]{limmaref}
+         {\sc Smyth, G.{ }K.{}} (2004),
+         {}Linear models and empirical {B}ayes methods
+for assessing differential
+  expression in microarray experiments. {\it Statistical Applications in Genetics
+and Molecular Biology}{} \textbf{3}, Art. 3.
+
+\bibitem[Tusher {,} Tibshirani and Chu 2001]{rsam}
+        {\sc Tusher, V.G., Tibshirani, R., and Chu, G.} (2001),
+         {}Significance analysis of microarrays applied to the ionizing radiation response {\it
+PNAS}{} \textbf{98(9)}, 5116{--}5121
+
+\bibitem[Yuan and Kendziorski 2006]{reb10}
+        {\sc Yuan, M., Kendziorski, C.{ }M.{}} (2006),
+         {}A Unified Approach for Simultaneous Gene Clustering and Differential Expression Identification. {\it
+Biometrics}{} \textbf{62}, 1089{--}1098
+
+\bibitem[Ghosh 2010]{rGosh}
+        {\sc Ghosh} (2010),
+         {}Discrete nonparametric algorithms for outlier detection with genomic data. {\it
+Journal of Biopharmaceutical Statistics}{}
+
+\bibitem[Tibshirani, R. and Hastie, 2007]{rtib}
+        {\sc Tibshirani, R. and Hastie} (2007),
+         {}Outlier sums for differential gene expression analysis. {\it
+Biostatistics}{} \textbf{8}, 2{--}8
+
+\bibitem[Wu, 2007]{rwu}
+        {\sc Wu.B} (2007),
+         {}Cancer outlier
+differential gene expression detection. {\it Biostatistics}{}
+\textbf{8}, 566{--}575
+
+\bibitem[MacDonald, 2006]{mg06}
+   {\sc MacDonald, J. W. and Ghosh, D.} (2006),
+   {}COPA--cancer outlier profile analysis}
+   {\it Bioinformatics}
+    \textbf{22}, 2950{--}1
+
+\end{thebibliography}
+\end{document}

@@ -1,7 +1,7 @@
 Package: coGPS
 Type: Package
 Title: cancer outlier Gene Profile Sets
-Version: 1.4.0
+Version: 1.5.0
 Date: 2011-10-20
 Author: Yingying Wei, Michael Ochs
 Maintainer: Yingying Wei <ywei@jhsph.edu>
